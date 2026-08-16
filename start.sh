@@ -71,18 +71,47 @@ for pkg in chess prompt_toolkit tenacity; do
     fi
 done
 
-# 2-5. Validation loops for prompts
+# 2. Token input and API authentication loop
 while true; do
     printf "Lichess Bot Token: "
-    read -r -s TOKEN
+    read -r -s TOKEN_INPUT
     echo ""
+    
+    # Strip carriage returns, newlines, quotes, and whitespace
+    TOKEN=$(echo "$TOKEN_INPUT" | tr -d '\r\n' | sed -e 's/^[[:space:]"'"'"']*//' -e 's/[[:space:]"'"'"']*$//')
+    if [[ "$TOKEN" == Bearer\ * ]]; then
+        TOKEN="${TOKEN#Bearer }"
+        TOKEN=$(echo "$TOKEN" | sed -e 's/^[[:space:]"'"'"']*//' -e 's/[[:space:]"'"'"']*$//')
+    fi
+
     if [ -z "$TOKEN" ]; then
         echo "Error: Token cannot be empty. Please try again."
         continue
     fi
-    break
+
+    echo "Authenticating with Lichess API..."
+    ACCOUNT_JSON=$(curl -s -H "Authorization: Bearer $TOKEN" https://lichess.org/api/account)
+    USERNAME=$(echo "$ACCOUNT_JSON" | python3 -c "import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('username', ''))
+except Exception:
+    print('')
+")
+
+    if [ -n "$USERNAME" ]; then
+        echo "✓ Successfully authenticated as: $USERNAME"
+        break
+    else
+        echo "Error: Failed to authenticate with Lichess API."
+        echo "Lichess API response: $ACCOUNT_JSON"
+        echo "Note: Make sure to copy the personal access token (starts with lip_...) from lichess.org/account/oauth/token."
+        echo "Please re-enter your token:"
+        continue
+    fi
 done
 
+# 3. Threads prompt
 while true; do
     printf "Stockfish Threads [recommended: 6]: "
     read -r THREADS_INPUT
@@ -94,6 +123,7 @@ while true; do
     fi
 done
 
+# 4. Hash size prompt
 while true; do
     printf "Hash size in MB [recommended: 512]: "
     read -r HASH_INPUT
@@ -105,7 +135,7 @@ while true; do
     fi
 done
 
-# 6. Copy template to config.yml and substitute placeholders
+# 5. Copy template to config.yml and substitute placeholders
 if [ ! -f "config.yml.template" ]; then
     echo "Error: config.yml.template not found."
     exit 1
@@ -115,14 +145,14 @@ cp config.yml.template config.yml
 sed -i.bak -e "s|__TOKEN__|$TOKEN|g" -e "s|__THREADS__|$THREADS|g" -e "s|__HASH__|$HASH|g" config.yml
 rm -f config.yml.bak
 
-# 7. Check stockfish executable
+# 6. Check stockfish executable
 if [ ! -x "engines/stockfish" ]; then
     echo "Error: engines/stockfish not found or not executable."
     echo "Please run: bash scripts/download_engines.sh"
     exit 1
 fi
 
-# 8. Check books directory
+# 7. Check books directory
 BOOK_COUNT=$(find books -maxdepth 1 -name "*.bin" 2>/dev/null | wc -l)
 BOOKS_STATUS="ENABLED ($BOOK_COUNT books loaded)"
 if [ "$BOOK_COUNT" -eq 0 ]; then
@@ -137,23 +167,7 @@ with open('config.yml', 'w') as f:
 " 2>/dev/null || true
 fi
 
-# 9. Detect username by calling Lichess API
-ACCOUNT_JSON=$(curl -s -H "Authorization: Bearer $TOKEN" https://lichess.org/api/account)
-USERNAME=$(echo "$ACCOUNT_JSON" | python3 -c "import sys, json
-try:
-    data = json.load(sys.stdin)
-    print(data.get('username', ''))
-except Exception:
-    print('')
-")
-
-if [ -z "$USERNAME" ]; then
-    echo "Error: Failed to authenticate with Lichess API using the provided token."
-    echo "API Response: $ACCOUNT_JSON"
-    exit 1
-fi
-
-# 10-14. Status outputs
+# 8. Status outputs
 echo "✓ Logged in as: $USERNAME"
 echo "✓ Threads: $THREADS  Hash: ${HASH}MB  Games: 1 at a time"
 echo "✓ Accepting: ALL time controls · Standard & Chess960 · rated + casual"
@@ -163,10 +177,10 @@ echo "✓ Online EGTB: DISABLED  |  Local books: $BOOKS_STATUS"
 # Pass config into BotLi expected location
 cp config.yml BotLi/config.yml
 
-# 15. Start BotLi
+# 9. Start BotLi
 echo "Starting BotLi... (Ctrl+C to stop)"
 
-# 16. Run BotLi matchmaking
+# 10. Run BotLi matchmaking
 cd BotLi
 if command -v uv &> /dev/null; then
     exec uv run user_interface.py matchmaking
