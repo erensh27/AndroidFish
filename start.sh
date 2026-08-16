@@ -41,19 +41,35 @@ if [ ! -d "BotLi" ]; then
 fi
 
 # 0. Ensure required Python dependencies are installed
-if ! python3 -c "import aiohttp, chess, prompt_toolkit, psutil, yaml, tenacity" 2>/dev/null; then
-    echo "Installing required Python dependencies for BotLi..."
+if ! python3 -c "import psutil" 2>/dev/null; then
+    echo "Installing psutil..."
     if command -v pkg &> /dev/null; then
-        echo "Installing Termux system dependencies and pre-compiled packages..."
-        pkg install -y clang make python-pip python-psutil python-yaml 2>/dev/null || true
+        pkg install -y python-psutil 2>/dev/null || true
     fi
-    pip install --upgrade pip 2>/dev/null || true
-    pip install chess prompt-toolkit tenacity pyyaml psutil 2>/dev/null || true
-    if ! python3 -c "import aiohttp" 2>/dev/null; then
-        echo "Installing pure-Python aiohttp on Android/Termux..."
-        AIOHTTP_NO_EXTENSIONS=1 YARL_NO_EXTENSIONS=1 MULTIDICT_NO_EXTENSIONS=1 FROZENLIST_NO_EXTENSIONS=1 pip install aiosignal attrs frozenlist multidict yarl aiohttp
+    if ! python3 -c "import psutil" 2>/dev/null; then
+        pip install psutil 2>/dev/null || true
     fi
 fi
+
+if ! python3 -c "import yaml" 2>/dev/null; then
+    echo "Installing PyYAML..."
+    if command -v pkg &> /dev/null; then
+        pkg install -y libyaml clang make 2>/dev/null || true
+    fi
+    pip install pyyaml --no-build-isolation 2>/dev/null || pip install pyyaml
+fi
+
+if ! python3 -c "import aiohttp" 2>/dev/null; then
+    echo "Installing aiohttp in pure-Python mode..."
+    AIOHTTP_NO_EXTENSIONS=1 YARL_NO_EXTENSIONS=1 MULTIDICT_NO_EXTENSIONS=1 FROZENLIST_NO_EXTENSIONS=1 pip install aiosignal attrs frozenlist multidict yarl aiohttp
+fi
+
+for pkg in chess prompt_toolkit tenacity; do
+    if ! python3 -c "import $pkg" 2>/dev/null; then
+        echo "Installing ${pkg//_/-}..."
+        pip install "${pkg//_/-}"
+    fi
+done
 
 # 2-5. Validation loops for prompts
 while true; do

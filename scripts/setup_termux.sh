@@ -8,16 +8,16 @@ cd "$SCRIPT_DIR"
 
 echo "=== Setting up Termux environment for Lichess Bot ==="
 
-# 1. Update packages and install Termux pre-built Python modules
+# 1. Update packages and install Termux build tools & packages
 if command -v pkg &> /dev/null; then
     echo "Updating Termux packages..."
     pkg update -y && pkg upgrade -y
-    echo "Installing Python, Git, Curl, Pip, build tools, and pre-compiled Python packages..."
-    pkg install -y python git curl python-pip clang make python-psutil python-yaml python-aiohttp
+    echo "Installing Python, Git, Curl, Pip, build tools, libyaml, and python-psutil..."
+    pkg install -y python git curl python-pip clang make libyaml python-psutil
 elif command -v apt &> /dev/null; then
     echo "Running on Debian/Ubuntu-based system..."
     apt update -y && apt upgrade -y
-    apt install -y python3 git curl python3-pip python3-psutil python3-yaml python3-aiohttp 2>/dev/null || apt install -y python3 git curl python3-pip
+    apt install -y python3 git curl python3-pip libyaml-dev python3-psutil 2>/dev/null || apt install -y python3 git curl python3-pip
 fi
 
 # 2. Assemble any multipart opening books
@@ -39,14 +39,14 @@ else
     echo "BotLi directory already exists. Skipping clone."
 fi
 
-# 4. Install remaining pure-python dependencies for BotLi
-echo "Installing Python dependencies (chess, prompt-toolkit, tenacity)..."
+# 4. Install Python dependencies
+echo "Installing Python dependencies..."
 pip install --upgrade pip 2>/dev/null || true
 pip install chess prompt-toolkit tenacity
-# In case psutil/yaml/aiohttp were not installed via pkg, install via pip
-pip install "psutil" "pyyaml" 2>/dev/null || true
+pip install pyyaml --no-build-isolation 2>/dev/null || pip install pyyaml
+
 if ! python3 -c "import aiohttp" 2>/dev/null; then
-    echo "Installing pure-Python aiohttp on Android/Termux..."
+    echo "Installing aiohttp in pure-Python mode..."
     AIOHTTP_NO_EXTENSIONS=1 YARL_NO_EXTENSIONS=1 MULTIDICT_NO_EXTENSIONS=1 FROZENLIST_NO_EXTENSIONS=1 pip install aiosignal attrs frozenlist multidict yarl aiohttp
 fi
 
