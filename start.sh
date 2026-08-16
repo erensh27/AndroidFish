@@ -11,18 +11,11 @@ trap cleanup EXIT
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Ensure ~/.local/bin is in PATH for uv
+# Ensure PATH includes local bins
 export PATH="$HOME/.local/bin:$PATH"
 
 # 1. Print ASCII banner
 echo "=== Lichess Bot — Moto G32 ==="
-
-# 0. Ensure uv is installed
-if ! command -v uv &> /dev/null; then
-    echo "Installing uv package manager..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    export PATH="$HOME/.local/bin:$PATH"
-fi
 
 # 0. Ensure multipart books are reassembled
 for part_file in books/*.bin.partaa; do
@@ -41,13 +34,21 @@ if [ ! -x "engines/stockfish" ]; then
     bash scripts/download_engines.sh
 fi
 
-# 0. Ensure BotLi exists and is synced
+# 0. Ensure BotLi exists
 if [ ! -d "BotLi" ]; then
-    echo "BotLi directory not found. Automatically cloning and setting up BotLi..."
+    echo "BotLi directory not found. Automatically cloning BotLi..."
     git clone https://github.com/Torom/BotLi.git
-    cd BotLi
-    uv sync
-    cd "$SCRIPT_DIR"
+fi
+
+# 0. Ensure required Python dependencies are installed
+if ! python3 -c "import aiohttp, chess, prompt_toolkit, psutil, yaml, tenacity" 2>/dev/null; then
+    echo "Installing required Python dependencies for BotLi..."
+    if command -v uv &> /dev/null; then
+        cd BotLi && uv sync && cd "$SCRIPT_DIR"
+    else
+        pip install --upgrade pip 2>/dev/null || true
+        pip install "aiohttp>=3.9.0" chess prompt-toolkit psutil pyyaml tenacity
+    fi
 fi
 
 # 2-5. Validation loops for prompts
@@ -147,4 +148,8 @@ echo "Starting BotLi... (Ctrl+C to stop)"
 
 # 16. Run BotLi matchmaking
 cd BotLi
-exec uv run user_interface.py matchmaking
+if command -v uv &> /dev/null; then
+    exec uv run user_interface.py matchmaking
+else
+    exec python3 user_interface.py matchmaking
+fi

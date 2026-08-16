@@ -13,7 +13,7 @@ if command -v pkg &> /dev/null; then
     echo "Updating Termux packages..."
     pkg update -y && pkg upgrade -y
     # 2. Install dependencies
-    echo "Installing Python, Git, Curl, and dependencies..."
+    echo "Installing Python, Git, Curl, Pip, and build tools..."
     pkg install -y python git curl python-pip clang make
 elif command -v apt &> /dev/null; then
     echo "Running on Debian/Ubuntu-based system..."
@@ -21,17 +21,7 @@ elif command -v apt &> /dev/null; then
     apt install -y python3 git curl python3-pip
 fi
 
-# 3. Install uv
-echo "Installing uv..."
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 4. Add uv to PATH
-if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null; then
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-fi
-export PATH="$HOME/.local/bin:$PATH"
-
-# 5. Assemble any multipart opening books
+# 3. Assemble any multipart opening books
 for part_file in books/*.bin.partaa; do
     if [ -f "$part_file" ]; then
         base_book="${part_file%.partaa}"
@@ -42,7 +32,7 @@ for part_file in books/*.bin.partaa; do
     fi
 done
 
-# 6. Clone BotLi into repo root
+# 4. Clone BotLi into repo root
 if [ ! -d "BotLi" ]; then
     echo "Cloning BotLi repository..."
     git clone https://github.com/Torom/BotLi.git
@@ -50,11 +40,10 @@ else
     echo "BotLi directory already exists. Skipping clone."
 fi
 
-# 7. Install BotLi dependencies using uv
-echo "Syncing BotLi dependencies with uv..."
-cd BotLi
-uv sync
-cd ..
+# 5. Install BotLi dependencies
+echo "Installing Python dependencies for BotLi..."
+pip install --upgrade pip 2>/dev/null || true
+pip install "aiohttp>=3.9.0" chess prompt-toolkit psutil pyyaml tenacity
 
-# 8. Print completion message
+# 6. Print completion message
 echo "Setup complete. Now run: bash scripts/download_engines.sh"
