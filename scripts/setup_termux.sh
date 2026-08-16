@@ -31,7 +31,18 @@ if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null;
 fi
 export PATH="$HOME/.local/bin:$PATH"
 
-# 5. Clone BotLi into repo root
+# 5. Assemble any multipart opening books
+for part_file in books/*.bin.partaa; do
+    if [ -f "$part_file" ]; then
+        base_book="${part_file%.partaa}"
+        if [ ! -f "$base_book" ]; then
+            echo "Assembling opening book: $(basename "$base_book")..."
+            cat "${base_book}".part* > "$base_book"
+        fi
+    fi
+done
+
+# 6. Clone BotLi into repo root
 if [ ! -d "BotLi" ]; then
     echo "Cloning BotLi repository..."
     git clone https://github.com/Torom/BotLi.git
@@ -39,11 +50,11 @@ else
     echo "BotLi directory already exists. Skipping clone."
 fi
 
-# 6. Install BotLi dependencies using uv
+# 7. Install BotLi dependencies using uv
 echo "Syncing BotLi dependencies with uv..."
 cd BotLi
 uv sync
 cd ..
 
-# 7. Print completion message
+# 8. Print completion message
 echo "Setup complete. Now run: bash scripts/download_engines.sh"

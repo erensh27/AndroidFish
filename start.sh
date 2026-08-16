@@ -17,6 +17,39 @@ export PATH="$HOME/.local/bin:$PATH"
 # 1. Print ASCII banner
 echo "=== Lichess Bot — Moto G32 ==="
 
+# 0. Ensure uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "Installing uv package manager..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# 0. Ensure multipart books are reassembled
+for part_file in books/*.bin.partaa; do
+    if [ -f "$part_file" ]; then
+        base_book="${part_file%.partaa}"
+        if [ ! -f "$base_book" ]; then
+            echo "Assembling opening book: $(basename "$base_book")..."
+            cat "${base_book}".part* > "$base_book"
+        fi
+    fi
+done
+
+# 0. Ensure engines/stockfish exists
+if [ ! -x "engines/stockfish" ]; then
+    echo "Stockfish engine not found. Running download_engines.sh..."
+    bash scripts/download_engines.sh
+fi
+
+# 0. Ensure BotLi exists and is synced
+if [ ! -d "BotLi" ]; then
+    echo "BotLi directory not found. Automatically cloning and setting up BotLi..."
+    git clone https://github.com/Torom/BotLi.git
+    cd BotLi
+    uv sync
+    cd "$SCRIPT_DIR"
+fi
+
 # 2-5. Validation loops for prompts
 while true; do
     printf "Lichess Bot Token: "
@@ -70,7 +103,7 @@ fi
 
 # 8. Check books directory
 BOOK_COUNT=$(find books -maxdepth 1 -name "*.bin" 2>/dev/null | wc -l)
-BOOKS_STATUS="ENABLED"
+BOOKS_STATUS="ENABLED ($BOOK_COUNT books loaded)"
 if [ "$BOOK_COUNT" -eq 0 ]; then
     echo "WARNING: No .bin books found in books/ — book moves will be skipped"
     BOOKS_STATUS="DISABLED"
@@ -105,13 +138,6 @@ echo "✓ Threads: $THREADS  Hash: ${HASH}MB  Games: 1 at a time"
 echo "✓ Accepting: ALL time controls · Standard & Chess960 · rated + casual"
 echo "✓ Matchmaking: every 5 minutes"
 echo "✓ Online EGTB: DISABLED  |  Local books: $BOOKS_STATUS"
-
-# Check BotLi directory
-if [ ! -d "BotLi" ]; then
-    echo "Error: BotLi directory not found."
-    echo "Please run: bash scripts/setup_termux.sh"
-    exit 1
-fi
 
 # Pass config into BotLi expected location
 cp config.yml BotLi/config.yml

@@ -3,9 +3,7 @@ BotLi/config.yml
 engines/stockfish
 engines/fairy-stockfish
 engines/*.nnue
-books/*.bin
-books/*.abk
-books/*.ctg
+books/book3.bin
 BotLi/
 __pycache__/
 *.pyc
