@@ -1,0 +1,168 @@
+token: "__TOKEN__"
+
+engines:
+  standard:
+    dir: "../engines"
+    name: "stockfish"
+    ponder: true
+    silence_stderr: false
+    move_overhead_multiplier: 1.0
+    uci_options:
+      Threads: __THREADS__
+      Hash: __HASH__
+      Move Overhead: 100
+
+  variants:
+    dir: "../engines"
+    name: "fairy-stockfish"
+    ponder: true
+    silence_stderr: false
+    move_overhead_multiplier: 1.0
+    uci_options:
+      Threads: __THREADS__
+      Hash: __HASH__
+      Move Overhead: 100
+      EvalFile: "3check-cb5f517c228b.nnue:antichess-dd3cbe53cd4e.nnue:atomic-2cf13ff256cc.nnue:crazyhouse-8ebf84784ad2.nnue:horde-28173ddccabe.nnue:kingofthehill-978b86d0e6a4.nnue:racingkings-636b95f085e3.nnue"
+
+syzygy:
+  standard:
+    enabled: false
+
+gaviota:
+  enabled: false
+
+opening_books:
+  enabled: true
+  priority: 400
+  books:
+    standard:
+      selection: weighted_random
+      names:
+        - Book1
+        - Book2
+        - Book3
+        - Book4
+        - Book5
+        - Book6
+        - Book7
+        - Book8
+        - Book9
+        - Book10
+        - Book11
+        - Book12
+        - Book13
+        - Book14
+        - Book15
+
+online_moves:
+  opening_explorer:
+    enabled: false
+  lichess_cloud:
+    enabled: false
+  chessdb:
+    enabled: false
+  online_egtb:
+    enabled: false
+
+offer_draw:
+  enabled: true
+  score: 10
+  consecutive_moves: 5
+  min_game_length: 30
+  against_humans: true
+
+resign:
+  enabled: true
+  score: -700
+  consecutive_moves: 5
+  against_humans: true
+
+challenge:
+  concurrency: 1
+  max_takebacks: 3
+
+  human:
+    bullet_with_increment_only: false
+    variants:
+      - standard
+      - chess960
+      - fromPosition
+      - antichess
+      - atomic
+      - crazyhouse
+      - horde
+      - kingOfTheHill
+      - racingKings
+      - threeCheck
+    time_controls:
+      - bullet
+      - blitz
+      - rapid
+      - classical
+    modes:
+      - casual
+      - rated
+
+  bot:
+    bullet_with_increment_only: false
+    variants:
+      - standard
+      - chess960
+      - fromPosition
+      - antichess
+      - atomic
+      - crazyhouse
+      - horde
+      - kingOfTheHill
+      - racingKings
+      - threeCheck
+    time_controls:
+      - bullet
+      - blitz
+      - rapid
+      - classical
+    modes:
+      - casual
+      - rated
+
+matchmaking:
+  delay: 300
+  timeout: 10
+  selection: weighted_random
+  types:
+    blitz_3_2:
+      tc: 3+2
+    rapid_10_0:
+      tc: 10+0
+    blitz_5_3:
+      tc: 5+3
+    bullet_1_1:
+      tc: 1+1
+
+messages:
+  greeting: "Hi! I'm a bot running {engine} on a Moto G32. Good luck! Type !help for commands."
+  goodbye: "Good game!"
+  greeting_spectators: "Watching {engine} on a Moto G32. Type !help for commands."
+  goodbye_spectators: "Thanks for watching."
+
+# IMPORTANT: The opening_books: books: section above and the books: section below must be kept in sync.
+# To add/remove books:
+# 1. Drop your .bin polyglot files into books/
+# 2. Add an alias and relative path below (e.g. Book1: "../books/book1.bin")
+# 3. Add the alias to opening_books: books: standard: names: above
+books:
+  Book1: "../books/book1.bin"
+  Book2: "../books/book2.bin"
+  Book3: "../books/book3.bin"
+  Book4: "../books/book4.bin"
+  Book5: "../books/book5.bin"
+  Book6: "../books/book6.bin"
+  Book7: "../books/book7.bin"
+  Book8: "../books/book8.bin"
+  Book9: "../books/book9.bin"
+  Book10: "../books/book10.bin"
+  Book11: "../books/book11.bin"
+  Book12: "../books/book12.bin"
+  Book13: "../books/book13.bin"
+  Book14: "../books/book14.bin"
+  Book15: "../books/book15.bin"

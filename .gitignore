@@ -1,0 +1,12 @@
+config.yml
+BotLi/config.yml
+engines/stockfish
+engines/fairy-stockfish
+engines/*.nnue
+books/*.bin
+books/*.abk
+books/*.ctg
+BotLi/
+__pycache__/
+*.pyc
+.env
