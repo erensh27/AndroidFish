@@ -44,7 +44,11 @@ echo "Installing Python dependencies (chess, prompt-toolkit, tenacity)..."
 pip install --upgrade pip 2>/dev/null || true
 pip install chess prompt-toolkit tenacity
 # In case psutil/yaml/aiohttp were not installed via pkg, install via pip
-pip install "psutil" "pyyaml" "aiohttp>=3.9.0" 2>/dev/null || true
+pip install "psutil" "pyyaml" 2>/dev/null || true
+if ! python3 -c "import aiohttp" 2>/dev/null; then
+    echo "Installing pure-Python aiohttp on Android/Termux..."
+    AIOHTTP_NO_EXTENSIONS=1 YARL_NO_EXTENSIONS=1 MULTIDICT_NO_EXTENSIONS=1 FROZENLIST_NO_EXTENSIONS=1 pip install aiosignal attrs frozenlist multidict yarl aiohttp
+fi
 
 # 5. Print completion message
 echo "Setup complete. Now run: bash scripts/download_engines.sh"

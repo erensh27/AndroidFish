@@ -44,12 +44,15 @@ fi
 if ! python3 -c "import aiohttp, chess, prompt_toolkit, psutil, yaml, tenacity" 2>/dev/null; then
     echo "Installing required Python dependencies for BotLi..."
     if command -v pkg &> /dev/null; then
-        echo "Installing Termux pre-compiled Python packages (psutil, yaml, aiohttp)..."
-        pkg install -y python-psutil python-yaml python-aiohttp 2>/dev/null || true
+        echo "Installing Termux system dependencies and pre-compiled packages..."
+        pkg install -y clang make python-pip python-psutil python-yaml 2>/dev/null || true
     fi
     pip install --upgrade pip 2>/dev/null || true
-    pip install chess prompt-toolkit tenacity 2>/dev/null || true
-    pip install "aiohttp>=3.9.0" "pyyaml" "psutil" 2>/dev/null || true
+    pip install chess prompt-toolkit tenacity pyyaml psutil 2>/dev/null || true
+    if ! python3 -c "import aiohttp" 2>/dev/null; then
+        echo "Installing pure-Python aiohttp on Android/Termux..."
+        AIOHTTP_NO_EXTENSIONS=1 YARL_NO_EXTENSIONS=1 MULTIDICT_NO_EXTENSIONS=1 FROZENLIST_NO_EXTENSIONS=1 pip install aiosignal attrs frozenlist multidict yarl aiohttp
+    fi
 fi
 
 # 2-5. Validation loops for prompts
