@@ -10,7 +10,7 @@ engines:
     uci_options:
       Threads: __THREADS__
       Hash: __HASH__
-      Move Overhead: 100
+      Move Overhead: 200
     limits:
 
 syzygy:
@@ -81,7 +81,7 @@ online_moves:
     timeout: 5
     best_move: false
   online_egtb:
-    enabled: false
+    enabled: true
     min_time: 5
     timeout: 3
 
@@ -133,18 +133,26 @@ challenge:
       - rated
 
 matchmaking:
-  delay: 300
+  delay: 120
   timeout: 10
   selection: weighted_random
   types:
     blitz_3_2:
       tc: 3+2
+      min_rating_diff: 0
+      max_rating_diff: 400
     rapid_10_0:
       tc: 10+0
+      min_rating_diff: 0
+      max_rating_diff: 400
     blitz_5_3:
       tc: 5+3
+      min_rating_diff: 0
+      max_rating_diff: 400
     bullet_1_1:
       tc: 1+1
+      min_rating_diff: 0
+      max_rating_diff: 400
 
 tournament:
   waiting_period: 1

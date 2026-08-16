@@ -171,8 +171,8 @@ fi
 echo "✓ Logged in as: $USERNAME"
 echo "✓ Threads: $THREADS  Hash: ${HASH}MB  Games: 1 at a time"
 echo "✓ Accepting: ALL time controls · Standard & Chess960 · rated + casual"
-echo "✓ Matchmaking: every 5 minutes"
-echo "✓ Online EGTB: DISABLED  |  Local books: $BOOKS_STATUS"
+echo "✓ Matchmaking: every 2 minutes · Rating range: 2800–3200"
+echo "✓ Online EGTB: ENABLED  |  Local books: $BOOKS_STATUS"
 
 # Pass config into BotLi expected location
 cp config.yml BotLi/config.yml
