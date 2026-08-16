@@ -11,13 +11,19 @@ engines:
       Threads: __THREADS__
       Hash: __HASH__
       Move Overhead: 100
+    limits:
 
 syzygy:
   standard:
     enabled: false
+    paths: []
+    max_pieces: 7
+    instant_play: true
 
 gaviota:
   enabled: false
+  paths: []
+  max_pieces: 5
 
 opening_books:
   enabled: true
@@ -45,12 +51,39 @@ opening_books:
 online_moves:
   opening_explorer:
     enabled: false
+    priority: 300
+    only_without_book: false
+    use_for_variants: false
+    allow_repetitions: false
+    min_time: 10
+    timeout: 5
+    min_games: 5
+    only_with_wins: false
+    selection: "performance"
+    anti: false
   lichess_cloud:
     enabled: false
+    priority: 200
+    only_without_book: false
+    use_for_variants: false
+    allow_repetitions: false
+    trust_eval: false
+    min_eval_depth: 10
+    min_time: 10
+    timeout: 5
   chessdb:
     enabled: false
+    priority: 100
+    only_without_book: false
+    allow_repetitions: false
+    trust_eval: false
+    min_time: 10
+    timeout: 5
+    best_move: false
   online_egtb:
     enabled: false
+    min_time: 5
+    timeout: 3
 
 offer_draw:
   enabled: true
@@ -113,11 +146,24 @@ matchmaking:
     bullet_1_1:
       tc: 1+1
 
+tournament:
+  waiting_period: 1
+  tracked_users: []
+  tracked_teams: []
+  variants:
+    - standard
+    - chess960
+    - fromPosition
+
 messages:
   greeting: "Hi! I'm a bot running {engine} on a Moto G32. Good luck! Type !help for commands."
   goodbye: "Good game!"
   greeting_spectators: "Watching {engine} on a Moto G32. Type !help for commands."
   goodbye_spectators: "Thanks for watching."
+
+whitelist: []
+blacklist: []
+online_blacklists: []
 
 # IMPORTANT: The opening_books: books: section above and the books: section below must be kept in sync.
 # To add/remove books:
