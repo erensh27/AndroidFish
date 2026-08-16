@@ -12,18 +12,6 @@ engines:
       Hash: __HASH__
       Move Overhead: 100
 
-  variants:
-    dir: "../engines"
-    name: "fairy-stockfish"
-    ponder: true
-    silence_stderr: false
-    move_overhead_multiplier: 1.0
-    uci_options:
-      Threads: __THREADS__
-      Hash: __HASH__
-      Move Overhead: 100
-      EvalFile: "3check-cb5f517c228b.nnue:antichess-dd3cbe53cd4e.nnue:atomic-2cf13ff256cc.nnue:crazyhouse-8ebf84784ad2.nnue:horde-28173ddccabe.nnue:kingofthehill-978b86d0e6a4.nnue:racingkings-636b95f085e3.nnue"
-
 syzygy:
   standard:
     enabled: false
@@ -87,13 +75,6 @@ challenge:
       - standard
       - chess960
       - fromPosition
-      - antichess
-      - atomic
-      - crazyhouse
-      - horde
-      - kingOfTheHill
-      - racingKings
-      - threeCheck
     time_controls:
       - bullet
       - blitz
@@ -109,13 +90,6 @@ challenge:
       - standard
       - chess960
       - fromPosition
-      - antichess
-      - atomic
-      - crazyhouse
-      - horde
-      - kingOfTheHill
-      - racingKings
-      - threeCheck
     time_controls:
       - bullet
       - blitz

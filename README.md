@@ -1,6 +1,6 @@
 # AndroidFish — Lichess Bot on Android (Termux / Moto G32)
 
-A lightweight, robust setup to run a high-performance [Lichess Bot](https://lichess.org) powered by [BotLi](https://github.com/Torom/BotLi), **Stockfish**, and **Fairy-Stockfish** directly on an Android smartphone using **Termux** (no root, no Docker, no systemd required).
+A lightweight, robust setup to run a high-performance [Lichess Bot](https://lichess.org) powered by [BotLi](https://github.com/Torom/BotLi) and **Stockfish** directly on an Android smartphone using **Termux** (no root, no Docker, no systemd required).
 
 ---
 
@@ -16,6 +16,7 @@ A lightweight, robust setup to run a high-performance [Lichess Bot](https://lich
 - [Upgrading Account to Bot](#-upgrading-your-account-to-bot)
 - [Keeping the Bot Running 24/7 (Screen)](#-keeping-the-bot-running-with-screen)
 - [Updating BotLi](#-updating-botli)
+- [Future Additions & Roadmap (Fairy-Stockfish Variants)](#-future-additions--roadmap)
 - [Repository Structure](#-repository-structure)
 
 ---
@@ -56,7 +57,7 @@ cd AndroidFish
 # 3. Run the automated Termux environment setup
 bash scripts/setup_termux.sh
 
-# 4. Download Stockfish, Fairy-Stockfish, and variant NNUEs
+# 4. Download Stockfish engine
 bash scripts/download_engines.sh
 ```
 
@@ -113,7 +114,7 @@ Stockfish Threads [recommended: 6]: 6
 Hash size in MB [recommended: 512]: 512
 ✓ Logged in as: YourBotUsername
 ✓ Threads: 6  Hash: 512MB  Games: 1 at a time
-✓ Accepting: ALL time controls · ALL variants · rated + casual
+✓ Accepting: ALL time controls · Standard & Chess960 · rated + casual
 ✓ Matchmaking: every 5 minutes
 ✓ Online EGTB: DISABLED  |  Local books: ENABLED
 Starting BotLi... (Ctrl+C to stop)
@@ -183,6 +184,15 @@ cd ..
 
 ---
 
+## 🔮 Future Additions & Roadmap
+
+### Variant Support (Fairy-Stockfish)
+Currently, AndroidFish focuses purely on **Standard Chess**, **Chess960 (Fischer Random)**, and **fromPosition** games using the official ARM64 release of Stockfish.
+
+Support for non-standard chess variants (Antichess, Atomic, Crazyhouse, Horde, King of the Hill, Racing Kings, Three-Check) via **Fairy-Stockfish** and variant NNUE evaluation networks is planned for a future update once cross-compiled standalone ARM64 Android binaries are packaged with pre-built binary distributions.
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -192,12 +202,12 @@ AndroidFish/
 ├── start.sh                  # Interactive startup script (prompts token, threads, hash)
 ├── config.yml.template       # Config template with __TOKEN__, __THREADS__, __HASH__ placeholders
 ├── engines/
-│   ├── .gitkeep              # Engines directory (Stockfish & Fairy-Stockfish binaries)
-│   └── stockfish / fairy-stockfish (installed via download_engines.sh)
+│   ├── .gitkeep              # Engines directory (Stockfish binary)
+│   └── stockfish             # Installed via download_engines.sh
 ├── books/
 │   ├── .gitkeep              # Polyglot opening books directory
 │   └── *.bin                 # User-provided .bin opening books
 └── scripts/
     ├── setup_termux.sh       # One-time Termux package & dependency installer
-    └── download_engines.sh   # Engine & variant NNUE downloader script
+    └── download_engines.sh   # Engine downloader script for Stockfish
 ```

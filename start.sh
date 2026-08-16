@@ -68,14 +68,7 @@ if [ ! -x "engines/stockfish" ]; then
     exit 1
 fi
 
-# 8. Check fairy-stockfish executable
-if [ ! -x "engines/fairy-stockfish" ]; then
-    echo "Error: engines/fairy-stockfish not found or not executable."
-    echo "Please run: bash scripts/download_engines.sh"
-    exit 1
-fi
-
-# 9. Check books directory
+# 8. Check books directory
 BOOK_COUNT=$(find books -maxdepth 1 -name "*.bin" 2>/dev/null | wc -l)
 BOOKS_STATUS="ENABLED"
 if [ "$BOOK_COUNT" -eq 0 ]; then
@@ -90,7 +83,7 @@ with open('config.yml', 'w') as f:
 " 2>/dev/null || true
 fi
 
-# 10. Detect username by calling Lichess API
+# 9. Detect username by calling Lichess API
 ACCOUNT_JSON=$(curl -s -H "Authorization: Bearer $TOKEN" https://lichess.org/api/account)
 USERNAME=$(echo "$ACCOUNT_JSON" | python3 -c "import sys, json
 try:
@@ -106,10 +99,10 @@ if [ -z "$USERNAME" ]; then
     exit 1
 fi
 
-# 11-15. Status outputs
+# 10-14. Status outputs
 echo "✓ Logged in as: $USERNAME"
 echo "✓ Threads: $THREADS  Hash: ${HASH}MB  Games: 1 at a time"
-echo "✓ Accepting: ALL time controls · ALL variants · rated + casual"
+echo "✓ Accepting: ALL time controls · Standard & Chess960 · rated + casual"
 echo "✓ Matchmaking: every 5 minutes"
 echo "✓ Online EGTB: DISABLED  |  Local books: $BOOKS_STATUS"
 
@@ -123,9 +116,9 @@ fi
 # Pass config into BotLi expected location
 cp config.yml BotLi/config.yml
 
-# 16. Start BotLi
+# 15. Start BotLi
 echo "Starting BotLi... (Ctrl+C to stop)"
 
-# 17. Run BotLi matchmaking
+# 16. Run BotLi matchmaking
 cd BotLi
 exec uv run user_interface.py matchmaking

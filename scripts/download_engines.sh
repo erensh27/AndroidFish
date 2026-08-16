@@ -6,12 +6,12 @@ cd "$SCRIPT_DIR"
 
 mkdir -p engines
 
-echo "=== Downloading Chess Engines and NNUE Evaluation Files ==="
+echo "=== Downloading Stockfish Engine ==="
 
 SYS_ARCH=$(uname -m)
 echo "Detected architecture: $SYS_ARCH"
 
-# 1. Download Stockfish
+# Download Stockfish
 echo "Checking Stockfish release..."
 if [[ "$SYS_ARCH" == "aarch64" || "$SYS_ARCH" == "arm64" ]]; then
     SF_URL="https://github.com/official-stockfish/Stockfish/releases/download/sf_18/stockfish-android-armv8.tar"
@@ -72,107 +72,14 @@ else
 fi
 rm -rf "$TMP_DIR"
 
-# 2. Download or Build Fairy-Stockfish
-echo "Setting up Fairy-Stockfish..."
-FAIRY_INSTALLED=0
-
-# Try prebuilt release if on x86_64
-if [[ "$SYS_ARCH" == "x86_64" ]]; then
-    PREBUILT_URL="https://github.com/fairy-stockfish/Fairy-Stockfish/releases/download/fairy_sf_14/fairy-stockfish_x86-64"
-    echo "Downloading prebuilt Fairy-Stockfish for x86_64..."
-    if curl -f -sL "$PREBUILT_URL" -o engines/fairy-stockfish 2>/dev/null; then
-        chmod +x engines/fairy-stockfish
-        FAIRY_INSTALLED=1
-        echo "✓ Fairy-Stockfish downloaded to engines/fairy-stockfish"
-    fi
-fi
-
-if [ "$FAIRY_INSTALLED" -eq 0 ]; then
-    if [[ "$SYS_ARCH" == "aarch64" || "$SYS_ARCH" == "arm64" ]]; then
-        BUILD_ARCH="armv8"
-    elif [[ "$SYS_ARCH" == "x86_64" ]]; then
-        BUILD_ARCH="x86-64"
-    else
-        BUILD_ARCH="general-64"
-    fi
-
-    echo "Building Fairy-Stockfish from source for ARCH=$BUILD_ARCH..."
-    BUILD_DIR=$(mktemp -d)
-    git clone --depth 1 https://github.com/fairy-stockfish/Fairy-Stockfish.git "$BUILD_DIR/Fairy-Stockfish"
-    make -C "$BUILD_DIR/Fairy-Stockfish/src" -j"$(nproc 2>/dev/null || echo 2)" build ARCH="$BUILD_ARCH"
-    
-    # Check for compiled binary (named stockfish or fairy-stockfish)
-    if [ -f "$BUILD_DIR/Fairy-Stockfish/src/stockfish" ]; then
-        cp "$BUILD_DIR/Fairy-Stockfish/src/stockfish" engines/fairy-stockfish
-    elif [ -f "$BUILD_DIR/Fairy-Stockfish/src/fairy-stockfish" ]; then
-        cp "$BUILD_DIR/Fairy-Stockfish/src/fairy-stockfish" engines/fairy-stockfish
-    else
-        echo "Error: Fairy-Stockfish compilation did not produce an executable binary."
-        rm -rf "$BUILD_DIR"
-        exit 1
-    fi
-    chmod +x engines/fairy-stockfish
-    rm -rf "$BUILD_DIR"
-    echo "✓ Fairy-Stockfish built and installed to engines/fairy-stockfish"
-fi
-
-# 3. Download Fairy-Stockfish NNUEs
-echo "Downloading variant NNUE files into engines/..."
-NNUE_FILES=(
-    "3check-cb5f517c228b.nnue:1z5oUQbqiE0ZIoQ8Z64y2lF91Rz1rUoWP"
-    "antichess-dd3cbe53cd4e.nnue:1a6j61utWpCTADQ8k6BBqYMcKjJ5ESdbl"
-    "atomic-2cf13ff256cc.nnue:1bC7T3iDft8Kbuxlu3Vm2fERxk7cOSoDy"
-    "crazyhouse-8ebf84784ad2.nnue:1nieguR4yCb0BlME-AUhcrFYkmyIOGvqs"
-    "horde-28173ddccabe.nnue:16BQztGqFIS1n_dYtmdfFVE2EexF-KagX"
-    "kingofthehill-978b86d0e6a4.nnue:1x25r_1PgB5XqttkfR494M4rseiIm0BAV"
-    "racingkings-636b95f085e3.nnue:1Tiq8FqSu7eiekE2iaWQzSdJPg-mhvLzJ"
-)
-
-BASE_RELEASE_URL="https://github.com/fairy-stockfish/Fairy-Stockfish/releases/download/fairy_sf_14"
-
-for ENTRY in "${NNUE_FILES[@]}"; do
-    FILE_NAME="${ENTRY%%:*}"
-    GDRIVE_ID="${ENTRY##*:}"
-    TARGET_PATH="engines/$FILE_NAME"
-
-    if [ -f "$TARGET_PATH" ]; then
-        echo "  - $FILE_NAME already exists, skipping."
-        continue
-    fi
-
-    echo "  - Downloading $FILE_NAME..."
-    GITHUB_URL="$BASE_RELEASE_URL/$FILE_NAME"
-    if curl --connect-timeout 5 --max-time 30 -f -sL "$GITHUB_URL" -o "$TARGET_PATH" 2>/dev/null; then
-        echo "    ✓ Downloaded from GitHub releases"
-    else
-        GDRIVE_URL="https://drive.usercontent.google.com/download?id=$GDRIVE_ID&export=download"
-        if curl --connect-timeout 5 --max-time 30 -f -sL "$GDRIVE_URL" -o "$TARGET_PATH" 2>/dev/null; then
-            echo "    ✓ Downloaded from official repository"
-        else
-            echo "    Warning: Could not download $FILE_NAME automatically. You can manually download it to engines/"
-        fi
-    fi
-done
-
-# 4. Engine verification tests
-echo "Verifying engines..."
-# Test Stockfish
+# Verification test
+echo "Verifying Stockfish engine..."
 if [ -x "./engines/stockfish" ]; then
     SF_BENCH=$(./engines/stockfish bench 16 1 1 default depth 2>&1 | head -n 1 || true)
     if [ -n "$SF_BENCH" ]; then
         echo "✓ Stockfish test PASS: $SF_BENCH"
     else
         echo "Note: Stockfish binary not executable directly on this host arch (expected if cross-downloaded for Android ARM64)."
-    fi
-fi
-
-# Test Fairy-Stockfish
-if [ -x "./engines/fairy-stockfish" ]; then
-    FAIRY_UCI=$(printf "uci\nquit\n" | ./engines/fairy-stockfish 2>&1 || true)
-    if echo "$FAIRY_UCI" | grep -q "uciok"; then
-        echo "✓ Fairy-Stockfish UCI handshake test PASS"
-    else
-        echo "Note: Fairy-Stockfish binary not executable directly on this host arch (expected if cross-downloaded for Android ARM64)."
     fi
 fi
 
