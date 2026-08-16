@@ -43,12 +43,13 @@ fi
 # 0. Ensure required Python dependencies are installed
 if ! python3 -c "import aiohttp, chess, prompt_toolkit, psutil, yaml, tenacity" 2>/dev/null; then
     echo "Installing required Python dependencies for BotLi..."
-    if command -v uv &> /dev/null; then
-        cd BotLi && uv sync && cd "$SCRIPT_DIR"
-    else
-        pip install --upgrade pip 2>/dev/null || true
-        pip install "aiohttp>=3.9.0" chess prompt-toolkit psutil pyyaml tenacity
+    if command -v pkg &> /dev/null; then
+        echo "Installing Termux pre-compiled Python packages (psutil, yaml, aiohttp)..."
+        pkg install -y python-psutil python-yaml python-aiohttp 2>/dev/null || true
     fi
+    pip install --upgrade pip 2>/dev/null || true
+    pip install chess prompt-toolkit tenacity 2>/dev/null || true
+    pip install "aiohttp>=3.9.0" "pyyaml" "psutil" 2>/dev/null || true
 fi
 
 # 2-5. Validation loops for prompts
