@@ -28,9 +28,9 @@ for part_file in books/*.bin.partaa; do
     fi
 done
 
-# 0. Ensure engines/stockfish exists
-if [ ! -x "engines/stockfish" ]; then
-    echo "Stockfish engine not found. Running download_engines.sh..."
+# 0. Ensure engines/stockfish exists and is runnable on this device
+if [ ! -x "engines/stockfish" ] || ! ./engines/stockfish uci >/dev/null 2>&1; then
+    echo "Stockfish engine not found or incompatible. Running download_engines.sh..."
     bash scripts/download_engines.sh
 fi
 
